@@ -6,104 +6,103 @@ package kruskalproyecto;
 
 import java.util.Arrays;
 import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
 public class IngresoGrafo extends javax.swing.JFrame {
 
     private int total;
 
-    /**
-     * Creates new form IngresoGrafo
-     */
     public IngresoGrafo() {
         initComponents();
-        total = 0;
+
     }
-    public static int i = 0;
-    
-    static final int MAX = 1005;  //maximo numero de vértices
+    public int i = 0;
 
-    ///UNION-FIND
-    static int padre[] = new int[MAX];  //Este arreglo contiene el padre del i-esimo nodo
+    private final int MAX = 1005;
 
-    //Método de inicialización
-    static void MakeSet(int n) {
+    private int padre[] = new int[MAX];
+
+    private void MakeSet(int n) {
         for (int i = 1; i <= n; ++i) {
             padre[i] = i;
         }
     }
 
-    //Método para encontrar la raiz del vértice actual X
-    static int Find(int x) {
+    //Método para encontrar la raiz del vértice actual 
+    private int Find(int x) {
         return (x == padre[x]) ? x : (padre[x] = Find(padre[x]));
     }
 
     //Método para unir 2 componentes conexas
-    static void Union(int x, int y) {
+    private void Union(int x, int y) {
         padre[Find(x)] = Find(y);
     }
 
     //Método que me determina si 2 vértices estan o no en la misma componente conexa
-    static boolean sameComponent(int x, int y) {
+    private boolean sameComponent(int x, int y) {
         if (Find(x) == Find(y)) {
             return true;
         }
         return false;
     }
-    ///FIN UNION-FIND
 
-    static int V, E;      //numero de vertices y aristas
-    //Estructura arista( edge )
-    
-    static Edge arista[] = new Edge[MAX];      //Arreglo de aristas para el uso en kruskal
-    static Edge MST[] = new Edge[MAX];     //Arreglo de aristas del MST encontrado
+    private int V, E;      //numero de vertices y aristas
+
+    private Edge arista[] = new Edge[MAX];      //Arreglo de aristas para el uso en kruskal
+    private Edge MST[] = new Edge[MAX];
 
     private void KruskalMST() {
         int origen, destino, peso;
-        //Peso total del MST
-        int numAristas = 0;     //Numero de Aristas del MST
-        
+
+        int numAristas = 0;
+
         MakeSet(V);           //Inicializamos cada componente
         Arrays.sort(arista, 0, E, new Edge());    //Ordenamos las aristas por su comparador
 
-        for (int i = 0; i < E; ++i) {     //Recorremos las aristas ya ordenadas por peso
-            origen = arista[i].origen;    //Vértice origen de la arista actual
-            destino = arista[i].destino;  //Vértice destino de la arista actual
-            peso = arista[i].peso;        //Peso de la arista actual
+        for (int i = 0; i < E; ++i) {
+            if (arista[i] != null) {
+                origen = arista[i].origen;
+                destino = arista[i].destino;
+                peso = arista[i].peso;        //Peso de la arista actual
 
-            //Verificamos si estan o no en la misma componente conexa
-            if (!sameComponent(origen, destino)) {  //Evito ciclos
-                this.total += peso;              //Incremento el peso total del MST
-                MST[numAristas++] = arista[i];  //Agrego al MST la arista actual
-                Union(origen, destino);  //Union de ambas componentes en una sola
+                
+                if (!sameComponent(origen, destino)) {
+                    this.total += peso;
+                    MST[numAristas++] = arista[i];
+                    Union(origen, destino);  //Union de ambas componentes en una sola
+                }
             }
         }
 
-        //Si el MST encontrado no posee todos los vértices mostramos mensaje de error
-        //Para saber si contiene o no todos los vértices basta con que el numero
-        //de aristas sea igual al numero de vertices - 1
+        //Si el Aebol encontrado no posee todos los vértices mostramos mensaje de error
         if (V - 1 != numAristas) {
-            mensaje("No existe MST valido para el grafo ingresado, el grafo debe ser conexo.");
-            return;
+            mensaje("No existe Arbol valido para el grafo ingresado, el grafo debe ser conexo.");
+            throw new NullPointerException();
+
         }
-        System.out.println("-----El MST encontrado contiene las siguientes aristas-----");
+
         for (int i = 0; i < numAristas; ++i) {
             llenarTabla(numAristas);
-            System.out.printf("( %d , %d ) : %d\n", MST[i].origen, MST[i].destino, MST[i].peso);
-        } //( vertice u , vertice v ) : peso
+
+        }
+        if(total==0){
+            mensaje("No existe Arbol valido para el grafo ingresado, el grafo debe ser conexo.");
+        }else{
         totalLabel.setText(" " + total);
-        
+        System.out.println(total);
+        }
     }
-    
+
     private void ingresarGrafo() {
-        
+
         if (i < E) {
             arista[i] = new Edge();
-            System.out.println("Ingrese el vertice de origen");
+
             arista[i].origen = Integer.parseInt(OrigenTxt.getText());
-            System.out.println("Ingrese el vertice de destino");
+
             arista[i].destino = Integer.parseInt(DestinoTxt.getText());
-            System.out.println("Ingrese el peso de la arista");
+
             arista[i].peso = Integer.parseInt(PesoTxt.getText());
             i++;
         }
@@ -118,27 +117,34 @@ public class IngresoGrafo extends javax.swing.JFrame {
         this.verticesTabla.removeAll();
         this.modelo = new DefaultTableModel();
         modelo.addColumn("Vertices");
-        
+
         for (int i = 0; i < numAristas; i++) {
             if (MST[i].origen != 0) {
                 addRowTable("(" + MST[i].origen + " , " + MST[i].destino + ") :  " + MST[i].peso);
             }
         }
-        
+
         this.verticesTabla.setModel(modelo);
-        
+
     }
-    
+
     private void addRowTable(String vert) {
         modelo.addRow(new Object[]{vert});
         this.verticesTabla.setModel(modelo);
     }
 
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
+    public void vaciarVector(Edge[] vector) {
+        for (int i = 0; i < vector.length; i++) {
+            vector[i] = null;
+        }
+    }
+
+    public void vaciarVector(int[] vector) {
+        for (int i = 0; i < vector.length; i++) {
+            vector[i] = 0;
+        }
+    }
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -162,14 +168,41 @@ public class IngresoGrafo extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         verticesTabla = new javax.swing.JTable();
         jLabel8 = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        jLabel10 = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
 
         jLabel5.setText("Arista de destino");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setResizable(false);
+
+        verticeNumTxt.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                verticeNumTxtKeyTyped(evt);
+            }
+        });
 
         jLabel1.setText("Ingrese el numero de vertices del grafo");
 
         jLabel2.setText("Ingrese el numero de aristas del grafo");
+
+        AristasNumTxt.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                AristasNumTxtActionPerformed(evt);
+            }
+        });
+        AristasNumTxt.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                AristasNumTxtKeyTyped(evt);
+            }
+        });
+
+        OrigenTxt.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                OrigenTxtKeyTyped(evt);
+            }
+        });
 
         jLabel3.setText("Vertice de origen");
 
@@ -178,16 +211,31 @@ public class IngresoGrafo extends javax.swing.JFrame {
                 DestinoTxtActionPerformed(evt);
             }
         });
+        DestinoTxt.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                DestinoTxtKeyTyped(evt);
+            }
+        });
 
         jLabel4.setText("Vertice de destino");
 
+        PesoTxt.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                PesoTxtKeyTyped(evt);
+            }
+        });
+
         jLabel6.setText("peso ");
 
+        jLabel7.setFont(new java.awt.Font("sansserif", 0, 18)); // NOI18N
+        jLabel7.setForeground(new java.awt.Color(0, 0, 0));
         jLabel7.setText("Total: ");
 
-        totalLabel.setText("El costo minimo de todas las aristas del MST es :");
+        totalLabel.setFont(new java.awt.Font("sansserif", 0, 18)); // NOI18N
+        totalLabel.setForeground(new java.awt.Color(0, 0, 0));
+        totalLabel.setText("El costo minimo de todas las aristas es :");
 
-        agregarVerticesAristas.setText("Aceptar");
+        agregarVerticesAristas.setText("Agregar grafo");
         agregarVerticesAristas.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 agregarVerticesAristasActionPerformed(evt);
@@ -217,7 +265,17 @@ public class IngresoGrafo extends javax.swing.JFrame {
 
         jLabel8.setFont(new java.awt.Font("sansserif", 1, 14)); // NOI18N
         jLabel8.setForeground(new java.awt.Color(0, 0, 0));
-        jLabel8.setText("ARBOL MINIMAL");
+        jLabel8.setText("ARBOL ");
+
+        jLabel9.setFont(new java.awt.Font("sansserif", 1, 24)); // NOI18N
+        jLabel9.setForeground(new java.awt.Color(0, 0, 0));
+        jLabel9.setText("ALGORITMO DE KRUSKAL");
+
+        jLabel10.setText("-->");
+
+        jLabel11.setFont(new java.awt.Font("sansserif", 2, 10)); // NOI18N
+        jLabel11.setForeground(new java.awt.Color(0, 0, 0));
+        jLabel11.setText("Nota: Los vertices solamente pueden ser numeros");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -226,83 +284,110 @@ public class IngresoGrafo extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(82, 82, 82)
-                        .addComponent(verticeNumTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(43, 43, 43)
+                        .addContainerGap(40, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(39, 39, 39)
-                                .addComponent(AristasNumTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(86, 86, 86)
-                                .addComponent(agregarVerticesAristas))
-                            .addComponent(jLabel2)
-                            .addComponent(jLabel1)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(35, 35, 35)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(OrigenTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabel3))
-                                .addGap(86, 86, 86)
-                                .addComponent(jLabel6))
-                            .addComponent(DestinoTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel4)
-                                .addGap(90, 90, 90)
-                                .addComponent(PesoTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(48, 48, 48)
-                                .addComponent(AgregarPesoBtn))
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addGroup(layout.createSequentialGroup()
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(jLabel3)
+                                        .addComponent(OrigenTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGap(18, 18, 18)
+                                    .addComponent(jLabel10)
+                                    .addGap(18, 18, 18)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(DestinoTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(jLabel4))
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(layout.createSequentialGroup()
+                                            .addGap(64, 64, 64)
+                                            .addComponent(jLabel6)
+                                            .addGap(194, 194, 194))
+                                        .addGroup(layout.createSequentialGroup()
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .addComponent(PesoTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addGap(18, 18, 18)
+                                            .addComponent(AgregarPesoBtn)
+                                            .addGap(6, 6, 6))))
+                                .addGroup(layout.createSequentialGroup()
+                                    .addGap(6, 6, 6)
+                                    .addComponent(jLabel11)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(totalLabel)))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 106, Short.MAX_VALUE)
+                                .addComponent(totalLabel)
+                                .addGap(111, 111, 111))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(82, 82, 82)
+                                .addComponent(verticeNumTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(43, 43, 43)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel2)
+                                    .addComponent(jLabel1)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(39, 39, 39)
+                                        .addComponent(AristasNumTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(86, 86, 86)
+                                        .addComponent(agregarVerticesAristas)))))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(46, 46, 46))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
+                .addGap(134, 134, 134)
+                .addComponent(jLabel9)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jLabel8)
-                .addGap(91, 91, 91))
+                .addGap(118, 118, 118))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(107, 107, 107)
-                .addComponent(jLabel1)
+                .addContainerGap(16, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel8)
+                    .addComponent(jLabel9))
                 .addGap(18, 18, 18)
-                .addComponent(verticeNumTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel2)
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(AristasNumTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(agregarVerticesAristas))
-                .addGap(26, 26, 26)
-                .addComponent(jLabel3)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(OrigenTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel6))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel4)
-                    .addComponent(PesoTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(AgregarPesoBtn))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(DestinoTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(55, 55, 55)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel7)
-                    .addComponent(totalLabel))
-                .addContainerGap(25, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabel8)
-                .addGap(18, 18, 18)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 383, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 383, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(18, 18, 18)
+                        .addComponent(verticeNumTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel2)
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(AristasNumTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(agregarVerticesAristas))
+                        .addGap(46, 46, 46)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(layout.createSequentialGroup()
+                                    .addComponent(jLabel4)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(DestinoTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(jLabel10)))
+                                .addGroup(layout.createSequentialGroup()
+                                    .addComponent(jLabel6)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(PesoTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(AgregarPesoBtn))))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel3)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(OrigenTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel11)
+                        .addGap(59, 59, 59)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(totalLabel)
+                            .addComponent(jLabel7))))
+                .addContainerGap(34, Short.MAX_VALUE))
         );
 
         pack();
@@ -325,44 +410,96 @@ public class IngresoGrafo extends javax.swing.JFrame {
         if (camposLLenosParaCalculoPesos()) {
             ingresarGrafo();
             if (i == E) {
-                KruskalMST();
+                try {
+                    KruskalMST();
+                } catch (Exception e) {
+                    mensaje("Error!");
+                    System.out.println(e);
+                    e.printStackTrace();
+                } finally {
+                    agregarVerticesAristas.setEnabled(true);
+                    verticeNumTxt.setEnabled(true);
+                    AristasNumTxt.setEnabled(true);
+                    verticeNumTxt.setText("");
+                    AristasNumTxt.setText("");
+                    OrigenTxt.setText("");
+                    DestinoTxt.setText("");
+                    PesoTxt.setText("");
+                    vaciarVector(arista);
+                    vaciarVector(MST);
+                    vaciarVector(padre);
+                    this.total = 0;
+                    this.V = 0;
+                    this.E = 0;
+                    this.i = 0;
+                }
+
             }
         }
-        
+
+
     }//GEN-LAST:event_AgregarPesoBtnActionPerformed
 
     private void DestinoTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DestinoTxtActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_DestinoTxtActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(IngresoGrafo.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(IngresoGrafo.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(IngresoGrafo.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(IngresoGrafo.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
+    private void verticeNumTxtKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_verticeNumTxtKeyTyped
+        // TODO add your handling code here:
 
-        /* Create and display the form */
+        soloNumeros(evt, verticeNumTxt);
+
+    }//GEN-LAST:event_verticeNumTxtKeyTyped
+
+    private void AristasNumTxtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AristasNumTxtActionPerformed
+        // TODO add your handling code here:
+
+
+    }//GEN-LAST:event_AristasNumTxtActionPerformed
+
+    private void AristasNumTxtKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_AristasNumTxtKeyTyped
+        // TODO add your handling code here:
+        soloNumeros(evt, AristasNumTxt);
+    }//GEN-LAST:event_AristasNumTxtKeyTyped
+
+    private void OrigenTxtKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_OrigenTxtKeyTyped
+        // TODO add your handling code here:
+        soloNumeros(evt, OrigenTxt);
+    }//GEN-LAST:event_OrigenTxtKeyTyped
+
+    private void DestinoTxtKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_DestinoTxtKeyTyped
+        // TODO add your handling code here:
+        soloNumeros(evt, DestinoTxt);
+    }//GEN-LAST:event_DestinoTxtKeyTyped
+
+    private void PesoTxtKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_PesoTxtKeyTyped
+        // TODO add your handling code here:
+        soloNumeros(evt, PesoTxt);
+    }//GEN-LAST:event_PesoTxtKeyTyped
+
+    private void soloNumeros(java.awt.event.KeyEvent evt, JTextField text) {
+        char C = evt.getKeyChar();
+
+        if (Character.isLetter(C)) {
+
+            getToolkit().beep();
+            evt.consume();
+            JOptionPane.showMessageDialog(this, "ingrese solo numeros");
+            text.setCursor(null);
+
+        } else if ((int) evt.getKeyChar() > 32 && (int) evt.getKeyChar() <= 47 || (int) evt.getKeyChar() >= 58 && (int) evt.getKeyChar() <= 64
+                || (int) evt.getKeyChar() >= 91 && (int) evt.getKeyChar() <= 96 || (int) evt.getKeyChar() >= 123 && (int) evt.getKeyChar() <= 255) {
+
+            getToolkit().beep();
+            evt.consume();
+            JOptionPane.showMessageDialog(this, "ingrese solo numeros");
+            text.setCursor(null);
+
+        }
+    }
+
+    public static void main(String args[]) {
+
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new IngresoGrafo().setVisible(true);
@@ -373,26 +510,26 @@ public class IngresoGrafo extends javax.swing.JFrame {
     private boolean camposLLenosNumVerticesAristas() {
         //Validar si los campos estan llenos para pasar a agregar el peso de cada una de las aristas
         String msj = "";
-        
+
         if (verticeNumTxt.getText().isEmpty() || Integer.parseInt(verticeNumTxt.getText()) <= 0) {
             msj += "Numero de vertices obligatorios\n";
         }
         if (AristasNumTxt.getText().isEmpty() || Integer.parseInt(AristasNumTxt.getText()) <= 0) {
             msj += "Numero de aristas obligatorias\n";
         }
-        
+
         if (!msj.equals("")) {
             mensaje(msj);
             return false;
         }
         return true;
-        
-    }    
+
+    }
 
     private boolean camposLLenosParaCalculoPesos() {
         //Validar si los campos de los vertices de destino, de origen estan llenos y de peso esten llenos
         String msj = "";
-        
+
         if (OrigenTxt.getText().isEmpty()) {
             msj += "Vertice de origen obligatorio\n";
         }
@@ -402,13 +539,13 @@ public class IngresoGrafo extends javax.swing.JFrame {
         if (PesoTxt.getText().isEmpty() || Integer.parseInt(PesoTxt.getText()) <= 0) {
             msj += "Peso obligatorio\n";
         }
-        
+
         if (!msj.equals("")) {
             mensaje(msj);
             return false;
         }
         return true;
-        
+
     }
 
 
@@ -420,6 +557,8 @@ public class IngresoGrafo extends javax.swing.JFrame {
     private javax.swing.JTextField PesoTxt;
     private javax.swing.JButton agregarVerticesAristas;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -427,6 +566,7 @@ public class IngresoGrafo extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel totalLabel;
     private javax.swing.JTextField verticeNumTxt;
